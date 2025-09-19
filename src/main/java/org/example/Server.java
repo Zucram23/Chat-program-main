@@ -72,7 +72,7 @@ public class Server {
         try {
             ServerSocket serverSocket = new ServerSocket(5001);
             System.out.println("Chat Server listening on port 5001");
-            System.out.println("Available rooms: Lobby, Gaming, Study, Random, VIP");
+            System.out.println("Available rooms: Lobby, testRoom1, testRoom2, testRoom3, testRoom4)");
 
             while (true) {
                 Socket clientSocket = serverSocket.accept();

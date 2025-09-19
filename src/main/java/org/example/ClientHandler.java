@@ -142,7 +142,7 @@ public class ClientHandler implements Runnable {
     }
     private void sendHelpMessage() {
         sendMessage("=== CHAT COMMANDS ===\n" +
-                "/join <room>  - Join a room (Lobby, Gaming, Study, Random, VIP)\n" +
+                "/join <room>  - Join a room (Lobby, testRoom1, testRoom2, testRoom3, testRoom4)\n" +
                 "/leave        - Leave current room\n" +
                 "/rooms        - List all rooms\n" +
                 "/who          - Show users in current room\n" +
@@ -188,7 +188,7 @@ public class ClientHandler implements Runnable {
             Room room = roomManager.findRoomByName(roomName);
             if (room == null) {
                 sendMessage("Room '" + roomName + "' does not exist.");
-                sendMessage("Available rooms: Lobby, Gaming, Study, Random, VIP");
+                sendMessage("Available rooms: Lobby, testRoom1, testRoom2, testRoom3, testRoom4");
             } else if (room.isRoomFull()) {
                 sendMessage("Room '" + roomName + "' is full!");
             } else {
