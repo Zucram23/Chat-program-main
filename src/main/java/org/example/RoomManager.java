@@ -9,10 +9,12 @@ public class RoomManager {
 
     public RoomManager() {
         this.rooms = new ArrayList<Room>();
-        rooms.add(new Room("Lavet en masse lort", 5));
-        rooms.add(new Room("Putin er en legend", 5));
-        rooms.add(new Room("Rummet for legender", 5));
-        rooms.add(new Room("nazi rummet", 1));
+        // Ændre til ordentlige room navne:
+        rooms.add(new Room("Lobby", 5));
+        rooms.add(new Room("testRoom1", 5));
+        rooms.add(new Room("testRoom2", 5));
+        rooms.add(new Room("testRoom3", 5));
+        rooms.add(new Room("testRoom4", 5));
     }
 
     public Room findRoomByName(String roomName) {
@@ -23,15 +25,21 @@ public class RoomManager {
         }
         return null;
     }
+
     public boolean joinRoom(ClientHandler client, String roomName) {
         Room room = findRoomByName(roomName);
         if (room == null){
             return false;
         }
-        leaveAllRooms(client);
 
+        if (room.isRoomFull()) {
+            return false;
+        }
+
+        leaveAllRooms(client);
         return room.addClient(client);
     }
+
     public boolean leaveRoom(ClientHandler client, String roomName) {
         Room room = findRoomByName(roomName);
         if (room != null) {
@@ -45,6 +53,7 @@ public class RoomManager {
             room.removeClient(client);
         }
     }
+
     public List<String> getRoomNames() {
         List<String> names = new ArrayList<>();
         for (Room room : rooms) {
@@ -52,8 +61,13 @@ public class RoomManager {
         }
         return names;
     }
+
     public List<Room> getAllRooms() {
         return rooms;
     }
 
+
+    public List<Room> getRooms() {
+        return rooms;
+    }
 }

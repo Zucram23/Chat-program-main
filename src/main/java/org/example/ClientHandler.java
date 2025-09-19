@@ -67,22 +67,40 @@ public class ClientHandler implements Runnable {
     }
     @Override
     public void run() {
-
         try {
             server.addClient(this);
 
-            writer.println("Welcome! Please enter your username: ");
+            sendMessage("Welcome! Please enter your username: ");
             username = reader.readLine();
 
-            server.broadcastMessage("["+clientId+"]: "+ username+" has joined the server!", this);
+            if (username == null || username.trim().isEmpty()) {
+                username = clientId;
+            }
+
+            sendMessage("Hello " + username + "! You are now connected to the chat server.");
+
+            // Automatisk join Lobby når bruger forbinder
+            if (roomManager.joinRoom(this, "Lobby")) {
+                this.currentRoom = roomManager.findRoomByName("Lobby");
+                sendMessage("You automatically joined the Lobby room!");
+            }
+
             sendHelpMessage();
 
-
-            while (true) {
-                String message = reader.readLine();
-                server.broadcastMessage("Message from [" + this.clientId + "] " + this.username + ": " + message, this);
+            String message;
+            while ((message = reader.readLine()) != null) {
+                if (message.startsWith("/")) {
+                    handleCommand(message);
+                } else {
+                    handleChatMessage(message);
+                }
             }
-        } catch (IOException e) {}
+
+        } catch (IOException e) {
+            System.err.println("Error with client " + clientId + ": " + e.getMessage());
+        } finally {
+            cleanup();
+        }
     }
     private void handleCommand(String command) {
         String[] parts = command.split(" ", 2);
@@ -110,9 +128,16 @@ public class ClientHandler implements Runnable {
     private void handleChatMessage(String message) {
         if (currentRoom != null) {
             String formattedMessage = username + ": " + message;
+
+            // Log til server konsol
+            System.out.println("[" + currentRoom.getRoomName() + "] " + formattedMessage);
+
             currentRoom.broadcastToRoom(formattedMessage, this);
+            sendMessage("[You]: " + message);
         } else {
-            sendMessage("You are not in any room! Use /join <roomname> to join a room.");
+            sendMessage(" You are not in any room!");
+            sendMessage(" Use /join <roomname> to join a room");
+            sendMessage(" Available rooms: /rooms");
         }
     }
     private void sendHelpMessage() {
@@ -179,6 +204,26 @@ public class ClientHandler implements Runnable {
             // Handle quietly
         }
     }
+    private void cleanup() {
+        try {
+            // Leave current room
+            if (currentRoom != null) {
+                currentRoom.removeClient(this);
+            }
 
+            // Remove from server
+            server.removeClient(this);
+
+            // Close streams and socket
+            if (reader != null) reader.close();
+            if (writer != null) writer.close();
+            if (socket != null) socket.close();
+
+            System.out.println(username + " (" + clientId + ") disconnected");
+
+        } catch (IOException e) {
+            System.err.println("Error during cleanup for " + clientId + ": " + e.getMessage());
+        }
+    }
 
 }

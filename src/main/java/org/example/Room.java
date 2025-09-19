@@ -4,10 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Room {
-    String roomName;
-    List<ClientHandler> clients;
-    int maxCapacity;
-
+    private String roomName;
+    private List<ClientHandler> clients;
+    private int maxCapacity;
 
     public Room(String roomName, int maxCapacity) {
         this.roomName = roomName;
@@ -16,33 +15,42 @@ public class Room {
     }
 
     public boolean addClient(ClientHandler client) {
-        if (clients.size() >= maxCapacity){
+        if (clients.size() >= maxCapacity) {
             return false;
         }
-        clients.add(client);
-        broadcastToRoom("["+client.getUsername()+"] has joined the room!", client);
-        return true;
-    }
 
-    public boolean removeClient(ClientHandler client) {
-        if (clients.remove(client)) {
-            broadcastToRoom("["+client.getUsername()+"] has left the room!", client);
+        if (!clients.contains(client)) {
+            clients.add(client);
+            broadcastToRoom("[" + client.getUsername() + " joined the room]", client);
             return true;
         }
         return false;
     }
 
-    public boolean isRoomFull(){
+    public boolean removeClient(ClientHandler client) {
+        if (clients.remove(client)) {
+            // Only broadcast if there are still clients in the room
+            if (!clients.isEmpty()) {
+                broadcastToRoom("[" + client.getUsername() + " left the room]", null);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isRoomFull() {
         return clients.size() >= maxCapacity;
     }
 
-    public int howManyInroom(){
+    public int howManyInroom() {
         return clients.size();
     }
+
     public int getMaxCapacity() {
         return maxCapacity;
     }
-    public List<String> clientNamesInRoom(){
+
+    public List<String> clientNamesInRoom() {
         List<String> names = new ArrayList<>();
         for (ClientHandler client : clients) {
             names.add(client.getUsername());
@@ -51,14 +59,22 @@ public class Room {
     }
 
     public void broadcastToRoom(String message, ClientHandler sender) {
+        // Log til server
+        System.out.println("Broadcasting to " + roomName + " (" + clients.size() + " clients): " + message);
+
         for (ClientHandler clientHandler : clients) {
-            //if (clientHandler != sender) {
-            clientHandler.sendMessage(message);
-            //}
+            if (clientHandler != sender) { // Don't send to sender
+                clientHandler.sendMessage(message);
+            }
         }
     }
+
     public String getRoomName() {
         return roomName;
+    }
+
+    public boolean containsClient(ClientHandler client) {
+        return clients.contains(client);
     }
 
 }
