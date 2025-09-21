@@ -35,6 +35,7 @@ public class ClientHandler implements Runnable {
             this.writer = new PrintWriter(socket.getOutputStream(), true);
         } catch (IOException e) {
             System.err.println("Failed to get streams for " + clientId + ": " + e.getMessage());
+            sendMessage("Failed trying to establish connection, try again");
         }
     }
 
@@ -127,8 +128,15 @@ public class ClientHandler implements Runnable {
                 processInput(rawInput);
             }
 
+        } catch (SocketException e){
+            System.err.println("socket error for client: "+clientId + e.getMessage());
+            sendMessage("Network connection error happened. You will be disconnected");
+        } catch (SocketTimeoutException e){
+            System.err.println("socket timeout for client: "+clientId + e.getMessage());
+            sendMessage("Connection timed out. You will be disconnected");
         } catch (IOException e) {
             System.err.println("Error with client " + clientId + ": " + e.getMessage());
+            sendMessage("A communication error occured, shutting down connection");
         } finally {
             cleanup();
         }
@@ -159,7 +167,11 @@ public class ClientHandler implements Runnable {
             } else {
                 sendMessage("Unknown message type: " + currentMessage.getMessageType());
             }
-        } catch (Exception e) {
+        } catch (NumberFormatException e){
+            System.err.println("Timestamp is used wrong");
+            sendMessage("Timestamp is causing error");
+        } catch (IllegalArgumentException e) {
+            System.err.println("Wrong use of message.");
             sendMessage("Invalid message format. Use: ClientID|timestamp|type|payload");
         }
     }
@@ -407,8 +419,12 @@ public class ClientHandler implements Runnable {
         sendMessage("Goodbye!");
         try {
             socket.close();
-        } catch (IOException e) {
-            // Handle quietly
+
+        } catch (SocketException e) {
+            System.err.println("Socket already closed or error while closing.");
+        }
+        catch (IOException e) {
+          System.err.println("I/O error while closing.");
         }
     }
 
@@ -425,6 +441,9 @@ public class ClientHandler implements Runnable {
             if (socket != null) socket.close();
 
             System.out.println(username + " (" + clientId + ") disconnected");
+
+        } catch (SocketException e) {
+            System.err.println("Socket error during cleanup.");
 
         } catch (IOException e) {
             System.err.println("Error during cleanup for " + clientId + ": " + e.getMessage());

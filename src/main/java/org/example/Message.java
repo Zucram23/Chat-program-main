@@ -19,6 +19,7 @@ public class Message {
     public Message(String rawMessage) {
         parseMessage(rawMessage);
     }
+
     private void parseMessage(String rawMessage) {
         try {
             String[] parts = rawMessage.split("\\|", 4); // Split på |, max 4 dele
@@ -30,14 +31,26 @@ public class Message {
             } else {
                 throw new IllegalArgumentException("Invalid message format");
             }
-        } catch (Exception e) {
-            // Fallback til TEXT type hvis parsing fejler
-            this.clientId = "unknown";
-            this.timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-            this.messageType = MessageType.TEXT;
-            this.payload = rawMessage;
+        } catch (IllegalArgumentException e) {
+            System.err.println("Invalid message format");
+            parseMessageErrorHandling(rawMessage);
+
+        } catch (ArrayIndexOutOfBoundsException e) {
+            parseMessageErrorHandling(rawMessage);
+            System.err.println("Array index out of bounds");
+        } catch (NullPointerException e) {
+            parseMessageErrorHandling(rawMessage);
         }
     }
+    private void parseMessageErrorHandling(String rawMessage) {
+        System.err.println("Invalid message format");
+        this.clientId = "unknown";
+        this.timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        this.messageType = MessageType.TEXT;
+        this.payload = rawMessage;
+    }
+
+
     // Convert Message object til protocol string
     public String toProtocolString() {
         return clientId + "|" + timestamp + "|" + messageType + "|" + payload;

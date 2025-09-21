@@ -64,7 +64,11 @@ public class Room {
 
         for (ClientHandler clientHandler : clients) {
             if (clientHandler != sender) { // Don't send to sender
-                clientHandler.sendMessage(message);
+                try {
+                    clientHandler.sendMessage(message);
+                } catch (Exception e) {
+                    System.err.println("Error while messaging");
+                }
             }
         }
     }

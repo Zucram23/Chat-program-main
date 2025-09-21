@@ -22,8 +22,13 @@ public class Client {
                     while ((message = reader.readLine()) != null) {
                         System.out.println(message);
                     }
-                } catch (IOException e) {
-
+                } catch (SocketException e) {
+                    System.err.println("Connection lost");
+                } catch (SocketTimeoutException e) {
+                    System.err.println("Connection timeout");
+                }
+                catch (IOException e) {
+                System.err.println("I/O error");
                 }
 
             });
@@ -31,10 +36,19 @@ public class Client {
 
             String input;
             while ((input = scanner.nextLine()) != null) {
-                writer.println(input);
+                    writer.println(input);
+                    System.err.println("I/O error");
             }
 
 
+        } catch (UnknownHostException e) {
+            System.err.println("Cant find server at " + hostname);
+        } catch (ConnectException e) {
+            System.err.println("Cant connect to " + hostname + ":" + port);
+        } catch (SocketException e) {
+            System.err.println("Error happened while conencting");
+        } catch (SocketTimeoutException e) {
+            System.err.println("Socket timed out");
         } catch (IOException e) {
 
         }

@@ -23,11 +23,20 @@ public class Server {
     }
 
     public void removeClient(ClientHandler client) {
-        clients.remove(client);
-        System.out.println("Client removed. Total clients: " + clients.size());
+        if (client==null){
+            System.err.println("Client is null");
+            return;
+        }
+            clients.remove(client);
+            System.out.println("Client removed. Total clients: " + clients.size());
+
     }
 
     public ClientHandler findClientByUsername(String username) {
+        if (username.isEmpty() || username.equals("")) {
+            System.err.println("Username is empty or null");
+            return null;
+        }
         for (ClientHandler client : clients) {
             if (client.getUsername().equalsIgnoreCase(username)) {
                 return client;
@@ -62,7 +71,7 @@ public class Server {
                 }
             }
         });
-        statusThread.setDaemon(true); // Daemon thread closes with main program
+        statusThread.setDaemon(true);
         statusThread.start();
     }
 
@@ -82,8 +91,12 @@ public class Server {
                 Thread clientThread = new Thread(clientHandler);
                 clientThread.start();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (SocketException e) {
+            System.err.println("Socket exception: " + e.getMessage());
+        } catch (SocketTimeoutException e) {
+            System.err.println("Socket timeout: " + e.getMessage());
+        } catch (IOException e) {
+            System.err.println("I/O exception: " + e.getMessage());
         }
     }
 }
